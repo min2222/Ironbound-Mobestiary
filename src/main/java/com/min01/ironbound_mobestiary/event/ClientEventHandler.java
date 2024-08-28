@@ -3,7 +3,7 @@ package com.min01.ironbound_mobestiary.event;
 import com.min01.ironbound_mobestiary.IronboundMobestiary;
 import com.min01.ironbound_mobestiary.entity.IronboundMobestiaryEntities;
 import com.min01.ironbound_mobestiary.entity.model.ModelDice;
-import com.min01.ironbound_mobestiary.entity.render.GamblerRenderer;
+import com.min01.ironbound_mobestiary.entity.renderer.GamblerRenderer;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;

@@ -1,4 +1,4 @@
-package com.min01.ironbound_mobestiary.entity.render;
+package com.min01.ironbound_mobestiary.entity.renderer;
 
 import com.min01.ironbound_mobestiary.IronboundMobestiary;
 import com.min01.ironbound_mobestiary.entity.model.GamblerModel;
