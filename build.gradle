@@ -165,6 +165,7 @@ dependencies {
 
     // GECKOLIB ***************************************************************************************************
     implementation fg.deobf("software.bernie.geckolib:geckolib-forge-${geckolib_version}")
+	implementation("com.eliotlash.mclib:mclib:20")
 
     // CAELUS *****************************************************************************************************
     compileOnly fg.deobf("top.theillusivec4.caelus:caelus-forge:${caelus_version}:api")

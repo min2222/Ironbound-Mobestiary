@@ -9,11 +9,13 @@ import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import io.redspace.ironsspellbooks.entity.mobs.abstract_spell_casting_mob.AbstractSpellCastingMob;
 import io.redspace.ironsspellbooks.entity.mobs.goals.WizardAttackGoal;
 import io.redspace.ironsspellbooks.entity.mobs.goals.WizardRecoverGoal;
+import io.redspace.ironsspellbooks.entity.mobs.wizards.priest.PriestEntity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -23,7 +25,9 @@ import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.animal.IronGolem;
 import net.minecraft.world.entity.monster.Monster;
+import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
@@ -34,7 +38,7 @@ public class EntityGambler extends AbstractSpellCastingMob
 	
 	public SchoolType school = SchoolRegistry.ICE.get();
 	
-	public final WizardAttackGoal wizardAttackGoal = new WizardAttackGoal(this, 1.25F, 10, 20).setDrinksPotions();
+	public final WizardAttackGoal wizardAttackGoal = new WizardAttackGoal(this, 1.25F, 10, 20).setSpellQuality(1, 1).setDrinksPotions();
 	
 	public EntityGambler(EntityType<? extends PathfinderMob> pEntityType, Level pLevel)
 	{
@@ -43,13 +47,16 @@ public class EntityGambler extends AbstractSpellCastingMob
 	}
 	
     @Override
-    protected void registerGoals() {
-        this.goalSelector.addGoal(1, new FloatGoal(this));
+    protected void registerGoals() 
+    {
+    	this.goalSelector.addGoal(1, new FloatGoal(this));
         this.goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
         this.goalSelector.addGoal(10, new WizardRecoverGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
-        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, AbstractVillager.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, IronGolem.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, PriestEntity.class, true));
     }
 	
     public static AttributeSupplier.Builder createAttributes()
@@ -59,13 +66,37 @@ public class EntityGambler extends AbstractSpellCastingMob
                 .add(Attributes.FOLLOW_RANGE, 24.0D)
     			.add(Attributes.MOVEMENT_SPEED, 0.25D);
     }
+	
+    @Override
+    protected SoundEvent getHurtSound(DamageSource p_21239_) 
+    {
+    	return SoundEvents.EVOKER_HURT;
+    }
     
-    @SuppressWarnings("deprecation")
+    @Override
+    protected SoundEvent getDeathSound() 
+    {
+    	return SoundEvents.EVOKER_DEATH;
+    }
+    
+    @Override
+    protected SoundEvent getAmbientSound()
+    {
+    	return SoundEvents.EVOKER_AMBIENT;
+    }
+    
+	@SuppressWarnings("deprecation")
 	@Override
     public SpawnGroupData finalizeSpawn(ServerLevelAccessor p_21434_, DifficultyInstance p_21435_, MobSpawnType p_21436_, SpawnGroupData p_21437_, CompoundTag p_21438_) 
     {
     	this.reassessWeaponGoal();
     	return super.finalizeSpawn(p_21434_, p_21435_, p_21436_, p_21437_, p_21438_);
+    }
+    
+    @Override
+    protected boolean shouldDespawnInPeaceful()
+    {
+    	return true;
     }
     
     @Override
@@ -80,7 +111,7 @@ public class EntityGambler extends AbstractSpellCastingMob
     {
     	super.tick();
     	
-    	if(this.tickCount % 100 == 0)
+    	if(this.tickCount % 200 == 0)
     	{
         	this.gambleSchool();
     	}
