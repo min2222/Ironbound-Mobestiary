@@ -62,7 +62,8 @@ public class EntityGambler extends AbstractSpellCastingMob
     public static AttributeSupplier.Builder createAttributes()
     {
         return Monster.createMonsterAttributes()
-    			.add(Attributes.MAX_HEALTH, 100.0D)
+    			.add(Attributes.MAX_HEALTH, 90.0D)
+    			.add(Attributes.ARMOR, 7.0D)
                 .add(Attributes.FOLLOW_RANGE, 24.0D)
     			.add(Attributes.MOVEMENT_SPEED, 0.25D);
     }
