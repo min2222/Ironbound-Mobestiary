@@ -1,6 +1,9 @@
 package com.min01.ironbound_mobestiary.event;
 
 import com.min01.ironbound_mobestiary.IronboundMobestiary;
+import com.min01.ironbound_mobestiary.entity.IronboundMobestiaryEntities;
+import com.min01.ironbound_mobestiary.entity.model.ModelDice;
+import com.min01.ironbound_mobestiary.entity.render.GamblerRenderer;
 
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
@@ -13,12 +16,12 @@ public class ClientEventHandler
     @SubscribeEvent
     public static void onRegisterLayerDefinitions(EntityRenderersEvent.RegisterLayerDefinitions event)
     {
-    	
+    	event.registerLayerDefinition(ModelDice.LAYER_LOCATION, ModelDice::createBodyLayer);
     }
     
     @SubscribeEvent
     public static void onRegisterEntityRenderers(EntityRenderersEvent.RegisterRenderers event)
     {
-    	
+    	event.registerEntityRenderer(IronboundMobestiaryEntities.GAMBLER.get(), GamblerRenderer::new);
     }
 }

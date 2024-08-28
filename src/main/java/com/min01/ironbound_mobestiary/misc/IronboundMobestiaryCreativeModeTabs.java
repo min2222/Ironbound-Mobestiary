@@ -1,6 +1,7 @@
 package com.min01.ironbound_mobestiary.misc;
 
 import com.min01.ironbound_mobestiary.IronboundMobestiary;
+import com.min01.ironbound_mobestiary.item.IronboundMobestiaryItems;
 
 import io.redspace.ironsspellbooks.registries.ItemRegistry;
 import net.minecraft.core.registries.Registries;
@@ -19,6 +20,6 @@ public class IronboundMobestiaryCreativeModeTabs
     		.icon(() -> new ItemStack(ItemRegistry.ARCHEVOKER_SPAWN_EGG.get()))
     		.displayItems((enabledFeatures, output) -> 
     		{
-
+    			output.accept(IronboundMobestiaryItems.GAMBLER_SPAWN_EGG.get());
     		}).build());
 }

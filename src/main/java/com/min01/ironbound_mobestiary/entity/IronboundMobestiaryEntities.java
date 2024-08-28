@@ -1,6 +1,7 @@
 package com.min01.ironbound_mobestiary.entity;
 
 import com.min01.ironbound_mobestiary.IronboundMobestiary;
+import com.min01.ironbound_mobestiary.entity.living.EntityGambler;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.Entity;
@@ -13,6 +14,8 @@ import net.minecraftforge.registries.RegistryObject;
 public class IronboundMobestiaryEntities
 {
 	public static final DeferredRegister<EntityType<?>> ENTITY_TYPES = DeferredRegister.create(ForgeRegistries.ENTITY_TYPES, IronboundMobestiary.MODID);
+	
+	public static final RegistryObject<EntityType<EntityGambler>> GAMBLER = registerEntity("gambler", createBuilder(EntityGambler::new, MobCategory.MISC));
 	
 	public static <T extends Entity> EntityType.Builder<T> createBuilder(EntityType.EntityFactory<T> factory, MobCategory category)
 	{
