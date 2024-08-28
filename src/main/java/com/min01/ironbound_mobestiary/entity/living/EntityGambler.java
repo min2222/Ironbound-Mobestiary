@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.redspace.ironsspellbooks.api.registry.SchoolRegistry;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
+import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
 import io.redspace.ironsspellbooks.api.spells.SchoolType;
 import io.redspace.ironsspellbooks.entity.mobs.abstract_spell_casting_mob.AbstractSpellCastingMob;
 import io.redspace.ironsspellbooks.entity.mobs.goals.WizardAttackGoal;
@@ -12,6 +13,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.ServerLevelAccessor;
 public class EntityGambler extends AbstractSpellCastingMob
 {
 	public static final List<SchoolType> ALL_SCHOOL = SchoolRegistry.REGISTRY.get().getValues().stream().toList();
+	
 	public SchoolType school = SchoolRegistry.ICE.get();
 	
 	public final WizardAttackGoal wizardAttackGoal = new WizardAttackGoal(this, 1.25F, 10, 20).setDrinksPotions();
@@ -46,12 +49,14 @@ public class EntityGambler extends AbstractSpellCastingMob
         this.goalSelector.addGoal(10, new WizardRecoverGoal(this));
         this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, LivingEntity.class, true));
     }
 	
     public static AttributeSupplier.Builder createAttributes()
     {
         return Monster.createMonsterAttributes()
-    			.add(Attributes.MAX_HEALTH, 20.0D)
+    			.add(Attributes.MAX_HEALTH, 100.0D)
+                .add(Attributes.FOLLOW_RANGE, 24.0D)
     			.add(Attributes.MOVEMENT_SPEED, 0.25D);
     }
     
@@ -93,86 +98,51 @@ public class EntityGambler extends AbstractSpellCastingMob
     {
     	if(this.level != null && !this.level.isClientSide)
         {
+    		List<AbstractSpell> allIceSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.ICE.get()).toList();
+    		List<AbstractSpell> allFireSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.FIRE.get()).toList();
+    		List<AbstractSpell> allHolySpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.HOLY.get()).toList();
+    		List<AbstractSpell> allEvocationSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.EVOCATION.get()).toList();
+    		List<AbstractSpell> allBloodSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.BLOOD.get()).toList();
+    		List<AbstractSpell> allNatureSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.NATURE.get()).toList();
+    		List<AbstractSpell> allEnderSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.ENDER.get()).toList();
+    		List<AbstractSpell> allLightningSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.LIGHTNING.get()).toList();
+    		List<AbstractSpell> allEldritchSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.ELDRITCH.get()).toList();
     		this.goalSelector.removeGoal(this.wizardAttackGoal);
-           
     		if(this.school == SchoolRegistry.ICE.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    					.setSpells(List.of(SpellRegistry.ICICLE_SPELL.get(), SpellRegistry.ICICLE_SPELL.get(), SpellRegistry.ICICLE_SPELL.get(), SpellRegistry.CONE_OF_COLD_SPELL.get()),
-    					List.of(SpellRegistry.COUNTERSPELL_SPELL.get()),
-    	                List.of(SpellRegistry.FROST_STEP_SPELL.get()),
-    	                List.of())
-    					.setSingleUseSpell(SpellRegistry.SUMMON_POLAR_BEAR_SPELL.get(), 80, 400, 3, 6));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allIceSpell, allIceSpell, allIceSpell, allIceSpell));
     		}
     		else if(this.school == SchoolRegistry.FIRE.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    	                .setSpells(List.of(SpellRegistry.FIREBOLT_SPELL.get(), SpellRegistry.FIREBOLT_SPELL.get(), SpellRegistry.FIREBOLT_SPELL.get(), SpellRegistry.FIRE_BREATH_SPELL.get(), SpellRegistry.BLAZE_STORM_SPELL.get()),
-    	                List.of(),
-    	                List.of(SpellRegistry.BURNING_DASH_SPELL.get()),
-    	                List.of())
-    	                .setSingleUseSpell(SpellRegistry.MAGMA_BOMB_SPELL.get(), 80, 200, 4, 6));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allFireSpell, allFireSpell, allFireSpell, allFireSpell));
     		}
     		else if(this.school == SchoolRegistry.HOLY.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    	                .setSpells(List.of(SpellRegistry.WISP_SPELL.get(), SpellRegistry.GUIDING_BOLT_SPELL.get()),
-    	                List.of(SpellRegistry.GUST_SPELL.get()),
-    	                List.of(),
-    	                List.of(SpellRegistry.HEAL_SPELL.get()))
-    	                .setSpellQuality(0.3F, 0.5F));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allHolySpell, allHolySpell, allHolySpell, allHolySpell));
     		}
     		else if(this.school == SchoolRegistry.EVOCATION.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    	                .setSpells(List.of(SpellRegistry.FANG_STRIKE_SPELL.get(), SpellRegistry.FIRECRACKER_SPELL.get()),
-    	                List.of(SpellRegistry.FANG_WARD_SPELL.get(), SpellRegistry.SHIELD_SPELL.get()),
-    	                List.of(),
-    	                List.of())
-    	                .setSpellQuality(.4F, .6F)
-    	                .setSingleUseSpell(SpellRegistry.INVISIBILITY_SPELL.get(), 40, 80, 5, 5));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allEvocationSpell, allEvocationSpell, allEvocationSpell, allEvocationSpell));
     		}
     		else if(this.school == SchoolRegistry.BLOOD.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    	                .setSpells(List.of(SpellRegistry.BLOOD_NEEDLES_SPELL.get(), SpellRegistry.BLOOD_NEEDLES_SPELL.get(), SpellRegistry.WITHER_SKULL_SPELL.get(), SpellRegistry.BLOOD_SLASH_SPELL.get()),
-    	                List.of(SpellRegistry.RAY_OF_SIPHONING_SPELL.get()),
-    	                List.of(),
-    	                List.of()));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allBloodSpell, allBloodSpell, allBloodSpell, allBloodSpell));
     		}
     		else if(this.school == SchoolRegistry.NATURE.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    	                .setSpells(List.of(SpellRegistry.EARTHQUAKE_SPELL.get(), SpellRegistry.EARTHQUAKE_SPELL.get(), SpellRegistry.ACID_ORB_SPELL.get(), SpellRegistry.POISON_BREATH_SPELL.get(), SpellRegistry.STOMP_SPELL.get(), SpellRegistry.POISON_ARROW_SPELL.get()),
-    	                 List.of(SpellRegistry.ROOT_SPELL.get()),
-    	                 List.of(),
-    	                 List.of(SpellRegistry.OAKSKIN_SPELL.get(), SpellRegistry.STOMP_SPELL.get()))
-    	                .setSingleUseSpell(SpellRegistry.FIREFLY_SWARM_SPELL.get(), 80, 200, 4, 6)
-    	                .setSpellQuality(.25F, .60F));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allNatureSpell, allNatureSpell, allNatureSpell, allNatureSpell));
     		}
     		else if(this.school == SchoolRegistry.ENDER.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    	                .setSpells(List.of(SpellRegistry.MAGIC_MISSILE_SPELL.get(), SpellRegistry.MAGIC_ARROW_SPELL.get()),
-    	                List.of(SpellRegistry.STARFALL_SPELL.get()),
-    	                List.of(SpellRegistry.TELEPORT_SPELL.get()),
-    	                List.of(SpellRegistry.EVASION_SPELL.get())));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allEnderSpell, allEnderSpell, allEnderSpell, allEnderSpell));
     		}
     		else if(this.school == SchoolRegistry.LIGHTNING.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    	                .setSpells(List.of(SpellRegistry.BALL_LIGHTNING_SPELL.get(), SpellRegistry.CHAIN_LIGHTNING_SPELL.get(), SpellRegistry.LIGHTNING_LANCE_SPELL.get()),
-    	                List.of(SpellRegistry.LIGHTNING_BOLT_SPELL.get(), SpellRegistry.ELECTROCUTE_SPELL.get()),
-    	                List.of(),
-    	                List.of(SpellRegistry.ASCENSION_SPELL.get())));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allLightningSpell, allLightningSpell, allLightningSpell, allLightningSpell));
     		}
     		else if(this.school == SchoolRegistry.ELDRITCH.get())
     		{
-    			this.goalSelector.addGoal(4, this.wizardAttackGoal
-    	                .setSpells(List.of(SpellRegistry.ABYSSAL_SHROUD_SPELL.get(), SpellRegistry.SCULK_TENTACLES_SPELL.get(), SpellRegistry.ELDRITCH_BLAST_SPELL.get()),
-    	                List.of(),
-    	                List.of(),
-    	                List.of(SpellRegistry.PLANAR_SIGHT_SPELL.get())));
+    			this.goalSelector.addGoal(4, this.wizardAttackGoal.setSpells(allEldritchSpell, allEldritchSpell, allEldritchSpell, allEldritchSpell));
     		}
         }
     }

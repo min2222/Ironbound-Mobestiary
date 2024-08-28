@@ -152,8 +152,6 @@ repositories {
 }
 
 dependencies {
-    // TREE *******************************************************************************************************
-    implementation fg.deobf("curse.maven:puffish-skills-835091:5551784")
 
     // FORGE ******************************************************************************************************
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
