@@ -2,6 +2,9 @@ package com.min01.ironbound_mobestiary.entity.living;
 
 import java.util.List;
 
+import com.min01.ironbound_mobestiary.network.GamblerSchoolSyncPacket;
+import com.min01.ironbound_mobestiary.network.IronboundMobestiaryNetwork;
+
 import io.redspace.ironsspellbooks.api.registry.SchoolRegistry;
 import io.redspace.ironsspellbooks.api.registry.SpellRegistry;
 import io.redspace.ironsspellbooks.api.spells.AbstractSpell;
@@ -11,14 +14,12 @@ import io.redspace.ironsspellbooks.entity.mobs.goals.WizardAttackGoal;
 import io.redspace.ironsspellbooks.entity.mobs.goals.WizardRecoverGoal;
 import io.redspace.ironsspellbooks.entity.mobs.wizards.priest.PriestEntity;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
-import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -30,20 +31,19 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.ServerLevelAccessor;
 
 public class EntityGambler extends AbstractSpellCastingMob
 {
 	public static final List<SchoolType> ALL_SCHOOL = SchoolRegistry.REGISTRY.get().getValues().stream().toList();
 	
-	public SchoolType school = SchoolRegistry.ICE.get();
+	public SchoolType school = ALL_SCHOOL.get((int) Math.floor(Math.random() * ALL_SCHOOL.size()));
 	
 	public final WizardAttackGoal wizardAttackGoal = new WizardAttackGoal(this, 1.25F, 10, 20).setSpellQuality(1, 1).setDrinksPotions();
 	
 	public EntityGambler(EntityType<? extends PathfinderMob> pEntityType, Level pLevel)
 	{
 		super(pEntityType, pLevel);
-		this.reassessWeaponGoal();
+		this.goalSelector.addGoal(4, this.wizardAttackGoal);
 	}
 	
     @Override
@@ -86,14 +86,6 @@ public class EntityGambler extends AbstractSpellCastingMob
     	return SoundEvents.EVOKER_AMBIENT;
     }
     
-	@SuppressWarnings("deprecation")
-	@Override
-    public SpawnGroupData finalizeSpawn(ServerLevelAccessor p_21434_, DifficultyInstance p_21435_, MobSpawnType p_21436_, SpawnGroupData p_21437_, CompoundTag p_21438_) 
-    {
-    	this.reassessWeaponGoal();
-    	return super.finalizeSpawn(p_21434_, p_21435_, p_21436_, p_21437_, p_21438_);
-    }
-    
     @Override
     protected boolean shouldDespawnInPeaceful()
     {
@@ -101,10 +93,20 @@ public class EntityGambler extends AbstractSpellCastingMob
     }
     
     @Override
-    public void readAdditionalSaveData(CompoundTag arg0) 
+    public void addAdditionalSaveData(CompoundTag pCompound) 
     {
-    	super.readAdditionalSaveData(arg0);
-    	this.reassessWeaponGoal();
+    	super.addAdditionalSaveData(pCompound);
+    	pCompound.putString("School", this.school.getId().toString());
+    }
+    
+    @Override
+    public void readAdditionalSaveData(CompoundTag pCompound) 
+    {
+    	super.readAdditionalSaveData(pCompound);
+    	if(pCompound.contains("School"))
+    	{
+    		this.school = SchoolRegistry.REGISTRY.get().getValue(new ResourceLocation(pCompound.getString("School")));
+    	}
     }
     
     @Override
@@ -112,7 +114,7 @@ public class EntityGambler extends AbstractSpellCastingMob
     {
     	super.tick();
     	
-    	if(this.tickCount % 200 == 0)
+    	if(this.tickCount % 200 == 0 && !this.level.isClientSide)
     	{
         	this.gambleSchool();
     	}
@@ -123,6 +125,7 @@ public class EntityGambler extends AbstractSpellCastingMob
     	this.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP);
 		int random = (int) Math.floor(Math.random() * ALL_SCHOOL.size());
     	this.school = ALL_SCHOOL.get(random);
+    	IronboundMobestiaryNetwork.sendToAll(new GamblerSchoolSyncPacket(this, this.school));
     	this.reassessWeaponGoal();
     }
     
