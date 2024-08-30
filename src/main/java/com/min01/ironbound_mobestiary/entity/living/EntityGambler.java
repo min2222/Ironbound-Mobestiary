@@ -21,6 +21,7 @@ import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
+import net.minecraft.world.entity.MobType;
 import net.minecraft.world.entity.PathfinderMob;
 import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -94,6 +95,12 @@ public class EntityGambler extends AbstractSpellCastingMob
     protected boolean shouldDespawnInPeaceful()
     {
     	return true;
+    }
+    
+    @Override
+    public MobType getMobType()
+    {
+    	return MobType.ILLAGER;
     }
     
     @Override
