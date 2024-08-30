@@ -17,9 +17,12 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobSpawnType;
 import net.minecraft.world.entity.PathfinderMob;
+import net.minecraft.world.entity.SpawnGroupData;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
@@ -31,6 +34,7 @@ import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.npc.AbstractVillager;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
 
 public class EntityGambler extends AbstractSpellCastingMob
 {
@@ -43,7 +47,7 @@ public class EntityGambler extends AbstractSpellCastingMob
 	public EntityGambler(EntityType<? extends PathfinderMob> pEntityType, Level pLevel)
 	{
 		super(pEntityType, pLevel);
-		this.goalSelector.addGoal(4, this.wizardAttackGoal);
+		this.reassessWeaponGoal();
 	}
 	
     @Override
@@ -103,10 +107,19 @@ public class EntityGambler extends AbstractSpellCastingMob
     public void readAdditionalSaveData(CompoundTag pCompound) 
     {
     	super.readAdditionalSaveData(pCompound);
+    	this.reassessWeaponGoal();
     	if(pCompound.contains("School"))
     	{
     		this.school = SchoolRegistry.REGISTRY.get().getValue(new ResourceLocation(pCompound.getString("School")));
     	}
+    }
+    
+    @SuppressWarnings("deprecation")
+	@Override
+    public SpawnGroupData finalizeSpawn(ServerLevelAccessor p_21434_, DifficultyInstance p_21435_, MobSpawnType p_21436_, SpawnGroupData p_21437_, CompoundTag p_21438_) 
+    {
+    	this.reassessWeaponGoal();
+    	return super.finalizeSpawn(p_21434_, p_21435_, p_21436_, p_21437_, p_21438_);
     }
     
     @Override
@@ -125,14 +138,15 @@ public class EntityGambler extends AbstractSpellCastingMob
     	this.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP);
 		int random = (int) Math.floor(Math.random() * ALL_SCHOOL.size());
     	this.school = ALL_SCHOOL.get(random);
-    	IronboundMobestiaryNetwork.sendToAll(new GamblerSchoolSyncPacket(this, this.school));
     	this.reassessWeaponGoal();
     }
     
+    //FIXME client desync of school when first spawned
     public void reassessWeaponGoal() 
     {
     	if(this.level != null && !this.level.isClientSide)
         {
+        	IronboundMobestiaryNetwork.sendToAll(new GamblerSchoolSyncPacket(this, this.school));
     		List<AbstractSpell> allIceSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.ICE.get()).toList();
     		List<AbstractSpell> allFireSpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.FIRE.get()).toList();
     		List<AbstractSpell> allHolySpell = SpellRegistry.REGISTRY.get().getValues().stream().filter(t -> t.getSchoolType() == SchoolRegistry.HOLY.get()).toList();
